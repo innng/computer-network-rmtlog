@@ -1,4 +1,5 @@
 import numpy as np
+import struct
 import socket
 import sys
 
@@ -13,30 +14,55 @@ def main():
     Tout = int(sys.argv[4])
     Perror = float(sys.argv[5])
     IP = ipPort[0]
-    port = socket.htons(np.uint32(ipPort[1]))
-
-    # counts messages in sequence
-    counter = 0
 
     try:
+        # takes port's parameter and transforms to network byte code
+        port = socket.htons(np.uint32(ipPort[1]))
+
         # converts string to address
         socket.inet_pton(socket.AF_INET, IP)
-
-        # sets a timeout
-        socket.settimeout(60)
 
         # creates Socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # connects to a socket on a server's side
-        socket.connect(IP)
+        # sets a timeout
+        s.settimeout(60)
 
-        # 
+        # connects to a socket on a server's side
+        # s.connect(IP)
 
     except socket.error as error_msg:
-        logExit(error_msg[1] + ", código " + error_msg[0])
+        logExit(error_msg[1] + ', código ' + error_msg[0])
+
+    file = open(filename, 'r')
+    log = file.read().splitlines()
+
+    # counts messages in sequence
+    counter = 0
+
+    for msg in log:
+
+        try:
+            # sends sequence number of the log
+            nSequence = struct.pack('Q', counter)
+            s.send(nSequence)
+
+            # sends timestamp
 
 
+            # sends log's size
+
+
+            # sends the log
+
+
+            # sends error verifier code
+
+
+        except socket.error as error_msg:
+            logExit(error_msg[1] + ', código ' + error_msg[0])
+
+        counter += 1
 
 def logExit(string):
     sys.exit(string)
