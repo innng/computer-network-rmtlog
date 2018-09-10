@@ -28,11 +28,11 @@ while True:
 	clientsocket.send(msg.encode('ascii'))
 
 	for i in range(0, 200):
-		# msg1 = clientsocket.recv(1024)
-		# print (msg1)
+		msg1 = clientsocket.recv(1024)
+		print (msg1)
 
-		msg2 = str(i)
-		clientsocket.send(msg2.encode('ascii'))
-		sleep(5)
-
+		if msg1 != None:
+			msg2 = str(i)
+			clientsocket.send(msg2.encode('ascii'))
+			sleep(1)
 	clientsocket.close()

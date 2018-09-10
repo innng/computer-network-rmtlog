@@ -30,35 +30,33 @@ class ClientWindow:
         self.windowEnd = self.wtx - 1
         self.acks = [None] * len(self.log)
 
-        thread1 = threading.Thread(target=self.confirmationThread, args=[sock])
-        # thread2 = threading.Thread(target=self.windowThread)
-        thread1.start()
-        # thread2.start()
+        confirmationStop = threading.Event()
+        confirmation = threading.Thread(target=self.confirmationThread, args=[sock, confirmationStop])
+        confirmation.start()
 
-        for msg in self.log:
-            print(msg)
-            print(self.windowStart, self.windowEnd, num)
-            if num >= self.windowStart and num <= self.windowEnd:
-                print('aqui')
+
+        while True:
+            if num > len(self.log) - 1:
+                break
+            elif num >= self.windowStart and num <= self.windowEnd:
+                msg = self.log[num]
+                print(self.windowStart, self.windowEnd, num)
+                print(msg)
                 data = self.buildLog(num, msg)
-                print(data)
-                # sock.send(data)
+                sock.send(data)
                 num += 1
-                continue
+            else:
+                if self.acks[self.windowStart] == 1:
+                    print('andou')
+                    self.windowStart += 1
+                    self.windowEnd += 1
 
-            while self.acks[self.windowStart] != 1:
-                time.sleep(1)
-                print('esperando')
-                pass
+                while self.acks[self.windowStart] != 1:
+                    pass
 
-            if self.acks[self.windowStart] == 1:
-                print('andou')
-                self.windowStart += 1
-                self.windowEnd += 1
-
-        thread1.join()
-        # thread2.join()
-
+        confirmationStop.set()
+        confirmation.join()
+        return
 
     def getTimestamp(self):
         seconds = time.time()
@@ -92,15 +90,9 @@ class ClientWindow:
 
         return data
 
-    def confirmationThread(self, sock):
-        while True:
+    def confirmationThread(self, sock, stop):
+        while not stop.is_set():
             msg = sock.get()
             print ('aeeee', msg.decode('ascii'))
 
             self.acks[int(msg)] = 1
-
-    def windowThread(self):
-        if self.acks[self.windowStart] == 1:
-            print('andou')
-            self.windowStart += 1
-            self.windowEnd += 1
