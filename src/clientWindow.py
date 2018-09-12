@@ -15,8 +15,7 @@ class ClientWindow:
     windowStart = 0
     windowEnd = 0
     acks = []
-    sent = []       # salvar o pacote já enviado para reenviar sem dar pack de novo
-    timeouts = []
+    sent = []       # salvar o pacote já enviado para reenviar
 
     def __init__(self, filename, wtx, tout, perror):
         with open(filename, 'r') as fp:
@@ -31,6 +30,7 @@ class ClientWindow:
         self.windowStart = 0
         self.windowEnd = self.wtx - 1
         self.acks = [None] * len(self.log)
+        self.sent = []
 
         lock = threading.Lock()
         confirmationStop = threading.Event()
@@ -49,6 +49,7 @@ class ClientWindow:
                 msg = self.log[num]
                 data = self.buildLog(num, msg)
                 sock.send(data)
+                self.sent.append(threading.Timer(self.tout, sock.send, args=data))
                 num += 1
             else:
                 while self.acks[self.windowStart] != 1:
@@ -59,34 +60,34 @@ class ClientWindow:
         return
 
     def getTimestamp(self):
-        seconds = time.time()
-        current = time.time()
-        nanoseconds = (current - seconds)*1000000000
+        ts = time.time()
+        seconds = int(ts)
+        sub = ts - seconds
+        nanoseconds = int(sub*(10**9))
 
-        return (int(seconds), int(nanoseconds))
+        return (seconds, nanoseconds)
 
-    def getMd5(self, no, sec, nanosec, msg=None):
-        if msg == None:
+    def getMd5(self, package):
+        hash = md5(package).digest()
+        return hash
+
+    def buildPack(self, no, sec, nanosec, msg=None):
+        if msg is None:
             data = struct.pack('!QQL', no, sec, nanosec)
         else:
-            msgLog = bytes(msg, 'utf-8')
-            data = struct.pack('!QQLH%ds' % (len(msgLog)), no, sec, nanosec, len(msgLog), msgLog)
-
-        hash = md5(data).digest()
-        return hash
-    
-    def buildLog(self, no, msg):
-        (sec, nanosec) = self.getTimestamp()
-        md5 = self.getMd5(no, sec, nanosec, msg)
-
-        msgLog = bytes(msg, 'utf-8')
-
-        data = struct.pack('!QQLH%ds' % (len(msgLog)), no, sec, nanosec, len(msgLog), msgLog)
-        print(data)
-        print(md5)
-        data = data + md5
+            msg1 = bytes(msg, 'ascii')
+            data = struct.pack('!QQLH', no, sec, nanosec, len(msg1))
+            data += msg1
 
         return data
+
+    def buildLog(self, no, msg):
+        (sec, nanosec) = self.getTimestamp()
+        data = self.buildPack(no, sec, nanosec, msg)
+        md5 = self.getMd5(data)
+
+        log = data + md5
+        return log
 
     def confirmationThread(self, sock, stop, lock):
         while not stop.is_set():
@@ -96,19 +97,22 @@ class ClientWindow:
                 with lock:
                     self.acks[int(msg)] = 1
 
-    def splitConfirmation(self, confirmation):
-        data = struct.unpack('!QQL', confirmation[0:20])
-
-        return (data, confirmation[20:])
-
     def checkConfirmation(self, confirmation):
-        print('ha')
-        # splita confirmação
-        # recalcula md5
-        # confere com o que foi recebido
+        data = struct.unpack('!QQL', confirmation[0:20])
+        md5 = confirmation[20:]
 
-    def errorMd5(self):
-        print('hey')
+        package = self.buildPack(*data)
+        md5Tester = self.getMd5(package)
+        if md5 == md5Tester:
+            return True
+        else:
+            return False
+
+    def errorMd5(self, package):
+        aux = int.from_bytes(package, 'big') + 1
+        pack = bytes(aux.to_bytes(len(package), 'big'))
+
+        return pack
 
     def printStatistics(self):
         print('ha!')

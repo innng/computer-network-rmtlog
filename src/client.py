@@ -13,13 +13,11 @@ def main():
     tout = int(sys.argv[4])
     perror = float(sys.argv[5])
 
-    # client = ClientSocket(ipPort)
+    client = ClientSocket(ipPort)
     window = ClientWindow(filename, wtx, tout, perror)
 
-    # client.get(1024)
-    # window.slidingWindow(client)
-
-    # window.splitConfirmation(data)
+    client.get(1024)
+    window.slidingWindow(client)
 
 
 if __name__ == '__main__':
