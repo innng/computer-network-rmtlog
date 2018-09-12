@@ -25,9 +25,9 @@ class ClientSocket:
         except socket.error as error_msg:
             self.logExit(error_msg)
 
-    def get(self):
+    def get(self, bytes):
         try:
-            msg = self.sock.recv(1024)
+            msg = self.sock.recv(bytes)
         except socket.error as error_msg:
             self.logExit(error_msg)
 

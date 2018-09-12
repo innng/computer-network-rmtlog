@@ -4,6 +4,7 @@ import threading
 import struct
 import socket
 import time
+import sys
 
 
 class ClientWindow:
@@ -14,6 +15,7 @@ class ClientWindow:
     windowStart = 0
     windowEnd = 0
     acks = []
+    sent = []       # salvar o pacote já enviado para reenviar sem dar pack de novo
     timeouts = []
 
     def __init__(self, filename, wtx, tout, perror):
@@ -30,27 +32,25 @@ class ClientWindow:
         self.windowEnd = self.wtx - 1
         self.acks = [None] * len(self.log)
 
+        lock = threading.Lock()
         confirmationStop = threading.Event()
-        confirmation = threading.Thread(target=self.confirmationThread, args=[sock, confirmationStop])
+        confirmation = threading.Thread(target=self.confirmationThread, args=[sock, confirmationStop, lock])
         confirmation.start()
-
 
         while True:
             if num > len(self.log) - 1:
                 break
-            elif num >= self.windowStart and num <= self.windowEnd:
+
+            while self.acks[self.windowStart] == 1:
+                self.windowStart += 1
+                self.windowEnd += 1
+
+            if num >= self.windowStart and num <= self.windowEnd:
                 msg = self.log[num]
-                print(self.windowStart, self.windowEnd, num)
-                print(msg)
                 data = self.buildLog(num, msg)
                 sock.send(data)
                 num += 1
             else:
-                if self.acks[self.windowStart] == 1:
-                    print('andou')
-                    self.windowStart += 1
-                    self.windowEnd += 1
-
                 while self.acks[self.windowStart] != 1:
                     pass
 
@@ -60,7 +60,6 @@ class ClientWindow:
 
     def getTimestamp(self):
         seconds = time.time()
-
         current = time.time()
         nanoseconds = (current - seconds)*1000000000
 
@@ -68,31 +67,48 @@ class ClientWindow:
 
     def getMd5(self, no, sec, nanosec, msg=None):
         if msg == None:
-            data = bytes(str(no) + str(sec) + str(nanosec), 'utf-8')
+            data = struct.pack('!QQL', no, sec, nanosec)
         else:
-            data = bytes(str(no) + str(sec) + str(nanosec) + str(len(msg)) +  msg, 'utf-8')
+            msgLog = bytes(msg, 'utf-8')
+            data = struct.pack('!QQLH%ds' % (len(msgLog)), no, sec, nanosec, len(msgLog), msgLog)
 
-        hash = md5(data).hexdigest()
+        hash = md5(data).digest()
         return hash
-
+    
     def buildLog(self, no, msg):
         (sec, nanosec) = self.getTimestamp()
-        hash = self.getMd5(no, sec, nanosec, msg)
+        md5 = self.getMd5(no, sec, nanosec, msg)
 
-        seq = np.uint64(socket.htonl(no))
-        seconds = np.uint64(socket.htonl(sec))
-        nanoseconds = np.uint32(socket.htonl(nanosec))
-        size = np.uint16(socket.htonl(len(msg)))
         msgLog = bytes(msg, 'utf-8')
-        md5 = bytes(hash, 'utf-8')
 
-        data = struct.pack('QQLH%ds%ds' % (len(msg), len(md5)), seq, seconds, nanoseconds, size, msgLog, md5)
+        data = struct.pack('!QQLH%ds' % (len(msgLog)), no, sec, nanosec, len(msgLog), msgLog)
+        print(data)
+        print(md5)
+        data = data + md5
 
         return data
 
-    def confirmationThread(self, sock, stop):
+    def confirmationThread(self, sock, stop, lock):
         while not stop.is_set():
-            msg = sock.get()
-            print ('aeeee', msg.decode('ascii'))
+            msg = sock.get(36)
 
-            self.acks[int(msg)] = 1
+            if self.checkConfirmation(msg) == True:
+                with lock:
+                    self.acks[int(msg)] = 1
+
+    def splitConfirmation(self, confirmation):
+        data = struct.unpack('!QQL', confirmation[0:20])
+
+        return (data, confirmation[20:])
+
+    def checkConfirmation(self, confirmation):
+        print('ha')
+        # splita confirmação
+        # recalcula md5
+        # confere com o que foi recebido
+
+    def errorMd5(self):
+        print('hey')
+
+    def printStatistics(self):
+        print('ha!')
