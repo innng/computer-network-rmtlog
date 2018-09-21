@@ -2,38 +2,36 @@
 
 import socket
 import sys
-from thread import *
+from threading import Thread
 import hashlib
 import numpy
+import socketserver
+
 # print (hashlib.md5(b'teste').hexdigest())
 # arquivo port Wrx Perror
 
 print_stuff = 1
 
-host = ''              # Nome simbólico significando todas as interfaces disp.
+UDP_IP = '127.0.0.1'   # Ip local
 arquivo = sys.argv[1]  # Arquivo onde salvar as msgs
 port = sys.argv[2]     # Port
 Wrx = sys.argv[3]      # Window size
 Perror = sys.argv[4]   # Porcentagem de erros a serem gerados
 
-# Criação do socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Criação do socketstruct sockaddr_in
+s = socket.socket(socket.AF_INET,        # INTERNET
+                  socket.SOCK_DGRAM, 0)  # UDP
 if print_stuff == 1:
     print("Socket created!")
 
 # Bind
 try:
-    s.bind((host, port))
+    s.bind((UDP_IP, port))
 except socket.error as error_msg:
     print("Bind failed. Error: "+str(error_msg[0]) + " - " + error_msg[1])
     sys.exit()
 if print_stuff == 1:
     print("Socket bind done!")
-
-# Início da escuta
-s.listen(10)
-if print_stuff == 1:
-    print("Socket listening...")
 
 
 # Função que irá  ligar com as conexões e será usada para a criação de threads
@@ -59,9 +57,9 @@ def threaded_client(conn):
 
 while True:
     # Esperando receber alguma conexão
-    conn, addr = s.accept()
+    data, addr = s.recvfrom(4096)
     print ('Connected to: ' + addr[0] + ':' + str(addr[1]))
 
-    start_new_thread(threaded_client, (conn,))
+    Thread.start_new_thread(threaded_client, (data,))
 
 s.close()
