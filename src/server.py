@@ -12,27 +12,6 @@ import socketserver
 
 print_stuff = 1
 
-UDP_IP = '127.0.0.1'   # Ip local
-arquivo = sys.argv[1]  # Arquivo onde salvar as msgs
-port = sys.argv[2]     # Port
-Wrx = sys.argv[3]      # Window size
-Perror = sys.argv[4]   # Porcentagem de erros a serem gerados
-
-# Criação do socketstruct sockaddr_in
-s = socket.socket(socket.AF_INET,        # INTERNET
-                  socket.SOCK_DGRAM, 0)  # UDP
-if print_stuff == 1:
-    print("Socket created!")
-
-# Bind
-try:
-    s.bind((UDP_IP, port))
-except socket.error as error_msg:
-    print("Bind failed. Error: "+str(error_msg[0]) + " - " + error_msg[1])
-    sys.exit()
-if print_stuff == 1:
-    print("Socket bind done!")
-
 
 # Função que irá  ligar com as conexões e será usada para a criação de threads
 def threaded_client(conn):
@@ -55,11 +34,41 @@ def threaded_client(conn):
     conn.close()
 
 
-while True:
-    # Esperando receber alguma conexão
-    data, addr = s.recvfrom(4096)
-    print ('Connected to: ' + addr[0] + ':' + str(addr[1]))
+# Função principal do programa
+def main():
+    udp_ip = '127.0.0.1'   # Ip local
+    arquivo = sys.argv[1]  # Arquivo onde salvar as msgs
+    port = sys.argv[2]     # Porto
+    Wrx = sys.argv[3]      # Tamanho da janela deslizante
+    Perror = sys.argv[4]   # Porcentagem de erros a serem gerados
 
-    Thread.start_new_thread(threaded_client, (data,))
+    # Criação do socketstruct sockaddr_in
+    s = socket.socket(socket.AF_INET,        # INTERNET
+                      socket.SOCK_DGRAM, 0)  # UDP
+    if print_stuff == 1:
+        print("Socket created!")
 
-s.close()
+    # Bind
+    s.bind((udp_ip, int(port)))
+    if print_stuff == 1:
+        print("Socket bind done!")
+
+    while True:
+        # Esperando receber datagrama
+        if print_stuff == 1:
+            print("Waiting for datagram...")
+        (data, addr) = s.recvfrom(16384)
+        print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
+        print('Received %s bytes' % len(data))
+        print("Data received: ", data, "\n")
+
+        # if data:
+        #     s.send("chegou carai", (udp_ip,port))
+
+        # Thread.start_new_thread(threaded_client, (addr,))
+
+    s.close()
+
+
+if __name__ == '__main__':
+    main()
