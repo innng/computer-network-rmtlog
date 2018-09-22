@@ -1,8 +1,12 @@
 """Servidor."""
+# classe janela: 1 obj pra cada cliente
+# vetor janelas (collections?)
+#
+
 
 import socket
 import sys
-from threading import Thread
+import threading
 import hashlib
 import numpy
 import socketserver
@@ -12,6 +16,12 @@ import socketserver
 
 print_stuff = 1
 
+clients = []
+
+#d = {'5': []}
+
+#d['5'].append(6)
+#print(d['5'])
 
 # Função que irá  ligar com as conexões e será usada para a criação de threads
 def threaded_client(conn):
@@ -65,8 +75,9 @@ def main():
         # if data:
         #     s.send("chegou carai", (udp_ip,port))
 
-        # Thread.start_new_thread(threaded_client, (addr,))
+        # threading.start_new_thread(threaded_client, (addr,))
 
+        thread = threading.Thread(target=threaded_client, args=[addr])
     s.close()
 
 
