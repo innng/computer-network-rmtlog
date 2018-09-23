@@ -25,37 +25,37 @@ clients = []
 #print(d['5'])
 
 
-class ThreadedServer(object):
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((self.host, self.port))
+# class ThreadedServer(object):
+#     def __init__(self, host, port):
+#         self.host = host
+#         self.port = port
+#         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#         # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+#         self.sock.bind((self.host, self.port))
+#
+#     def WaitDatagram(self):
+#
+#         while True:
+#             # Esperando receber datagrama
+#             if print_stuff == 1:
+#                 print("Waiting for datagram...")
+#
+#             (data, addr) = self.sock.recvfrom(16384)
+#             print("Data received: ", data, "\n")
+#             print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
+#             print('Received %s bytes' % len(data))
+#
+#             threading.Thread(target=self.threaded_client, args=(data, addr)).start()
 
-    def WaitDatagram(self):
+# Função de thread
+def threaded_client(s, data, addr):
+    # while True:
+        # Recebendo dados do cliente
 
-        while True:
-            # Esperando receber datagrama
-            if print_stuff == 1:
-                print("Waiting for datagram...")
-            (data, addr) = self.sock.recvfrom(16384)
-            print("Data received: ", data, "\n")
-            print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
-            print('Received %s bytes' % len(data))
-
-            threading.Thread(target=self.threaded_client, args=(data, addr)).start()
-
-    def threaded_client(self, data, addr):
-
-        while True:
-            # Recebendo dados do cliente
-
-            # Configurar o resto que tem que receber
-            # !!!!
-            self.sock.sendto(data, (addr,))
-
-
+        # Configurar o resto que tem que receber
+        # !!!!
+        # s.sendto(data, (addr,))
+        print(threading.currentThread())
 
 
 # Função principal do programa
@@ -77,7 +77,19 @@ def main():
     if print_stuff == 1:
         print("Socket bind done!")
 
-    ThreadedServer('',port).WaitDatagram();
+    while True:
+        # Esperando receber datagrama
+        if print_stuff == 1:
+            print("Waiting for datagram...")
+
+        (data, addr) = s.recvfrom(16384)
+        print("Data received: ", data, "\n")
+        print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
+        print('Received %s bytes' % len(data))
+
+        threading.Thread(target=threaded_client, args=(s, data, addr)).start()
+
+    # ThreadedServer(udp_ip, port).WaitDatagram()
 
 
 if __name__ == '__main__':
