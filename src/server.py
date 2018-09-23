@@ -5,6 +5,7 @@
 
 
 import socket
+import socketserver
 import sys
 import threading
 import hashlib
@@ -23,25 +24,38 @@ clients = []
 #d['5'].append(6)
 #print(d['5'])
 
-# Função que irá  ligar com as conexões e será usada para a criação de threads
-def threaded_client(conn):
-    u"""Função Thread dos clientes."""
-    # Envia uma mensagem de boas vindas (temporário)
-    conn.send(str.encode("You are connected to our server, welcome!\n"))
 
-    while True:
-        # Recebendo dados do cliente
+class ThreadedServer(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.host, self.port))
 
-        # Configurar o resto que tem que receber
-        # !!!!
+    def WaitDatagram(self):
 
-        data = conn.recv(2048)
-        reply = 'Server: ' + data.decode('utf-8')
-        if not data:
-            break
-        conn.sendall(str.encode(reply))
+        while True:
+            # Esperando receber datagrama
+            if print_stuff == 1:
+                print("Waiting for datagram...")
+            (data, addr) = self.sock.recvfrom(16384)
+            print("Data received: ", data, "\n")
+            print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
+            print('Received %s bytes' % len(data))
 
-    conn.close()
+            threading.Thread(target=self.threaded_client, args=(data, addr)).start()
+
+    def threaded_client(self, data, addr):
+
+        while True:
+            # Recebendo dados do cliente
+
+            # Configurar o resto que tem que receber
+            # !!!!
+            self.sock.sendto(data, (addr,))
+
+
 
 
 # Função principal do programa
@@ -63,22 +77,7 @@ def main():
     if print_stuff == 1:
         print("Socket bind done!")
 
-    while True:
-        # Esperando receber datagrama
-        if print_stuff == 1:
-            print("Waiting for datagram...")
-        (data, addr) = s.recvfrom(16384)
-        print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
-        print('Received %s bytes' % len(data))
-        print("Data received: ", data, "\n")
-
-        # if data:
-        #     s.send("chegou carai", (udp_ip,port))
-
-        # threading.start_new_thread(threaded_client, (addr,))
-
-        thread = threading.Thread(target=threaded_client, args=[addr])
-    s.close()
+    ThreadedServer('',port).WaitDatagram();
 
 
 if __name__ == '__main__':
