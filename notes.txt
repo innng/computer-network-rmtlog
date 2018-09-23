@@ -1,0 +1,23 @@
+geral:
+	calcular prob de md5 ficar incorreto
+	janelas usam confirmação seletiva
+
+imprimir (linha):
+	número de mensagens de log distintas
+	número de mensagens de log transmitidas (incluindo retransmissões)
+	número de mensagens transmitidas com MD5 incorreto
+	tempo total de execução
+	formato de impressão: [%d %d %d %.3fs]
+
+regra para lista de pacotes:
+	conjunto (nunca terá dois itens repetidos)
+	ao enviar um pacote, setta o timer e coloca na lista
+	ao estourar o timer, reenvia, reseta e mantém na lista
+	se receber confirmação, tira da lista
+
+ideias:
+	criar objeto pacote
+	janela deslizante como deck
+	timer stop
+	salvar mensagem em lista e ativar seu timer, chegada da confirmação exclui pacote da lista e desliga timer
+	se mensagem retransmitida, resetar timer, mas manter na lista
