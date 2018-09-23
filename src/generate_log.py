@@ -1,2 +1,2 @@
-for i in range(0, 5000):
-    print(i)
+for i in range(0, 200):
+    print("Mensagem", i)
