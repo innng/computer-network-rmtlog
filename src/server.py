@@ -58,15 +58,15 @@ def threaded_client(s, data, addr):
 
     # Fazendo o unpacking da mensagem enviada
     # O  formato "!QQLH" é o especificado na spec do TP
+    # ! = network byte order
     # Q = unsigned long long (64bits) - Numero de seq. e secs do timestamp
     # L = unsigned long (32bits)      - Nanosecs do timestamp
     # H = unsigned short (16 bits)    - Tamanho da msg
 
     # Lê o cabeçalho da mensagem
-
     msg_header = struct.unpack('!QQL', data[:20])
 
-    #Lê o tamanho da mensagem
+    # Lê o tamanho da mensagem
     msg_size = struct.unpack_from("!H", data[:22], 20)
 
     # Guardo o tamanho da mensagem (lido do formato H)
@@ -86,18 +86,18 @@ def threaded_client(s, data, addr):
     # Testa se o hash enviado e o testado com o cabeçalho e msg são iguais
     if (msg_hash[0] == test_hash):
         if print_stuff is 1: print("Test passed! Both Hashes are the same!")
+
+        # Envia o ack confirmando o recebimento da mensagem
+        ack = struct.pack("!QQL", *msg_header)
+        ack_hash = hashlib.md5(ack).digest()
+        ack += ack_hash
+        if print_stuff is 1: print("ACK w/ hash:", ack)
+        s.sendto(ack, addr)
+
+        if print_stuff is 1: print("Ack sent to client", addr[1], "\n")
     else:
         # Descartar mensagem
-        if print_stuff is 1: print("Hashes are not the same, message DISCARDED!")
-
-    # Envia o ack confirmando o recebimento da mensagem
-    ack = struct.pack("!QQL", *msg_header)
-    ack_hash = hashlib.md5(ack).digest()
-    ack += ack_hash
-    if print_stuff is 1: print("ACK w/ hash:", ack)
-    s.sendto(ack, addr)
-
-    if print_stuff is 1: print("Ack sent to client", addr[1],"\n")
+        if print_stuff is 1: print("Hashes are not the same, message DISCARDED!\n")
 
 
 # Função principal do programa
