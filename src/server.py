@@ -5,6 +5,7 @@
 
 
 import socket
+import struct
 import socketserver
 import sys
 import threading
@@ -49,13 +50,45 @@ clients = []
 
 # Função de thread
 def threaded_client(s, data, addr):
-    # while True:
-        # Recebendo dados do cliente
+    print("Thread created:", threading.currentThread())
 
-        # Configurar o resto que tem que receber
-        # !!!!
-        # s.sendto(data, (addr,))
-        print(threading.currentThread())
+    print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
+    print('Received %s bytes' % len(data))
+    print("Data received: ", data)
+
+    # Fazendo o unpacking da mensagem enviada
+    # O  formato "!QQLH" é o especificado na spec do TP
+    # Q = unsigned long long (64bits) - Numero de seq. e secs do timestamp
+    # L = unsigned long (32bits)      - Nanosecs do timestamp
+    # H = unsigned short (16 bits)    - Tamanho da msg
+
+    msg_header = struct.unpack('!QQLH', data[:22])
+
+    # Guardo o tamanho da mensagem (lido do formato H)
+
+    msg_size = int(msg_header[3])
+
+    # Leio a mensagem dando unpack de um offset igual ao tamanho do cabeçalho (22)
+
+    msg = struct.unpack_from("!"+str(msg_size)+"s", data[:22+msg_size], 22)
+    print("Message: ", msg[0])
+
+    msg_hash = struct.unpack_from("!16s", data[:22+msg_size+16], 22+msg_size)
+    print("Hash:     ", msg_hash[0])
+
+    test_hash = hashlib.md5(data[0:22+msg_size]).digest()
+    print("Test Hash:", test_hash)
+
+    # Testa se o hash enviado e o testado com o cabeçalho e msg são iguais
+    if (msg_hash[0] == test_hash):
+        print("Test passed! Both Hashes are the same!")
+    else:
+        # Descartar mensagem
+        print("Hashes are not the same, message DISCARDED!")
+
+
+    # s.sendto(data, (addr,))
+    print("\n")
 
 
 # Função principal do programa
@@ -83,9 +116,6 @@ def main():
             print("Waiting for datagram...")
 
         (data, addr) = s.recvfrom(16384)
-        print("Data received: ", data, "\n")
-        print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
-        print('Received %s bytes' % len(data))
 
         threading.Thread(target=threaded_client, args=(s, data, addr)).start()
 
