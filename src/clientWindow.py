@@ -14,6 +14,7 @@ class Window:
     Perror = 0
     acks = []
     sent = []
+    window = None
     statistic = {'msgDistinct': 0, 'msgTransmitted': 0, 'md5Incorrect': 0}
 
     def __init__(self, filename, wtx, tout, perror):
@@ -24,51 +25,51 @@ class Window:
         with open(filename, 'r') as fp:
             self.log = fp.read().splitlines()
 
-    def slidingWindow(self, sock):
         self.acks = [None] * len(self.log)
-        window = collections.deque(maxlen=self.Wtx)
+        self.sent = [None] * len(self.log)
+        self.window = collections.deque(maxlen=self.Wtx)
 
-        stopEvt = threading.Event()
-        thread = threading.Thread(target=self.confirmationThread, args=[sock, stopEvt])
+    def slidingWindow(self, sock):
+        thread = threading.Thread(target=self.confirmationThread, args=[sock])
         thread.start()
 
         seqNum = 0
 
         while True:
-
             if seqNum > len(self.log) - 1:
                 break
 
-            while len(window) > 0 and self.acks[window[0].num] == 1:
-                teste = window.popleft()
-                print('eba', teste.num)
+            while len(self.window) > 0 and self.acks[self.window[0].num] == 1:
+                teste = self.window.popleft()
 
-            if len(window) < self.Wtx:
-                print('num', seqNum)
+            if len(self.window) < self.Wtx:
+                print(seqNum)
                 msg = Package(no=seqNum, msg=self.log[seqNum])
-                window.append(msg)
+                self.window.append(msg)
+                self.sent[seqNum] = msg
+
                 pack = msg.getLog()
                 sock.send(pack)
+
                 seqNum += 1
             else:
-                while self.acks[window[0].num] != 1:
+                while self.acks[self.window[0].num] != 1:
                     pass
 
-        stopEvt.set()
         thread.join()
         return
 
-    def confirmationThread(self, sock, stopEvt):
-        lock = threading.Lock()
+    def resend(self, sock):
+        
 
-        while not stopEvt.is_set():
+    def confirmationThread(self, sock):
+        while None in self.acks:
             msg = sock.get(36)
 
             if self.checkAck(msg) == True:
-                print('aaaaaaa')
                 num,_,_ = struct.unpack('!QQL', msg[:20])
-                with lock:
-                    self.acks[num] = 1
+                print('confirmado', num)
+                self.acks[num] = 1
 
     def checkAck(self, pkg):
         num, sc, nanosc = struct.unpack('!QQL', pkg[:20])
@@ -132,3 +133,11 @@ class Package:
         aux = int.from_bytes(pkg, 'big') + 1
         pack = bytes(aux.to_bytes(len(pkg), 'big'))
         return pack
+
+    def setTimer(self, tout, func, a=None):
+        self.timer = threading.Timer(tout, func, args=a)
+        self.timer.start()
+
+    def resetTimer(self, tout, func, a=None):
+        self.timer.cancel()
+        self.setTimer(tout, func, a)

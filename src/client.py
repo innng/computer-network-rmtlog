@@ -23,6 +23,7 @@ def main():
     elapsed = end - start
     print(elapsed)
 
+
 class ClientSocket:
     sock = None
     addr = None
