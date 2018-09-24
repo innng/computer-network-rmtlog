@@ -8,6 +8,7 @@ import binascii
 
 
 class Window:
+    socket = None
     log = None
     Wtx = 0
     Tout = 0
@@ -17,20 +18,21 @@ class Window:
     window = None
     statistic = {'msgDistinct': 0, 'msgTransmitted': 0, 'md5Incorrect': 0}
 
-    def __init__(self, filename, wtx, tout, perror):
+    def __init__(self, filename, wtx, tout, perror, s):
         self.Wtx = wtx
         self.Tout = tout
         self.Perror = perror
+        self.socket = s
 
         with open(filename, 'r') as fp:
             self.log = fp.read().splitlines()
 
         self.acks = [None] * len(self.log)
-        self.sent = [None] * len(self.log)
         self.window = collections.deque(maxlen=self.Wtx)
 
-    def slidingWindow(self, sock):
-        thread = threading.Thread(target=self.confirmationThread, args=[sock])
+    def slidingWindow(self):
+        lock = threading.Lock()
+        thread = threading.Thread(target=self.confirmationThread)
         thread.start()
 
         seqNum = 0
@@ -43,13 +45,15 @@ class Window:
                 teste = self.window.popleft()
 
             if len(self.window) < self.Wtx:
-                print(seqNum)
+                print('enviando', seqNum)
                 msg = Package(no=seqNum, msg=self.log[seqNum])
-                self.window.append(msg)
-                self.sent[seqNum] = msg
+                with lock:
+                    self.window.append(msg)
+                    self.sent.append(msg)
 
                 pack = msg.getLog()
-                sock.send(pack)
+                self.socket.send(pack)
+                msg.setTimer(self.Tout, self.resend)
 
                 seqNum += 1
             else:
@@ -57,19 +61,33 @@ class Window:
                     pass
 
         thread.join()
+
+        print('sent', self.sent)
+        print('acks', self.acks)
         return
 
-    def resend(self, sock):
-        
+    def resend(self):
+        pack = self.sent[0].getLog()
+        self.socket.send(pack)
+        self.sent[0].cancelTimer()
+        self.sent[0].resetTimer(self.Tout, self.resend)
+        print('reenviando', self.sent[0].num)
 
-    def confirmationThread(self, sock):
+    def confirmationThread(self):
+        lock = threading.Lock()
+
         while None in self.acks:
-            msg = sock.get(36)
+            msg = self.socket.get(36)
 
             if self.checkAck(msg) == True:
                 num,_,_ = struct.unpack('!QQL', msg[:20])
                 print('confirmado', num)
-                self.acks[num] = 1
+                with lock:
+                    if self.acks[num] == None:
+                        self.acks[num] = 1
+                        self.sent[0].cancelTimer()
+                        teste = self.sent.pop(0)
+                        print('excluindo do sent', teste.num)
 
     def checkAck(self, pkg):
         num, sc, nanosc = struct.unpack('!QQL', pkg[:20])
@@ -138,6 +156,8 @@ class Package:
         self.timer = threading.Timer(tout, func, args=a)
         self.timer.start()
 
-    def resetTimer(self, tout, func, a=None):
+    def cancelTimer(self):
         self.timer.cancel()
+
+    def resetTimer(self, tout, func, a=None):
         self.setTimer(tout, func, a)

@@ -2,6 +2,7 @@ import hashlib
 import random
 import socket
 import struct
+import random
 import time
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -17,5 +18,9 @@ for i in range(0, 200):
     print(data[0])
 
     if message is not None:
+        rnd = random.random()
+
+        if rnd < 0.5:
+            time.sleep(6)
         server_socket.sendto(data2, address)
-        # time.sleep(5)
+        print('confirmando', data[0])
