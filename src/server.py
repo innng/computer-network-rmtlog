@@ -16,13 +16,24 @@ import numpy
 
 print_stuff = 1
 
-#clients = []
+clients = []
 
 #d = {'5': []}
-janela = {'idDoCliente': []}
+janela = {
+    'idDoCliente': ['packetObj1', 'packetObj2', 'packetObj3', 'packetObj4', 'packetObj5']
+}
 
-janela['idDoCliente'].append
-janela['idDoCliente'].sort(key=(lambda x: x.seqnum))
+# packetObj: seqnum, msg
+
+# thread confirma mensagem
+# thread monta o objeto packetObj com o seqnum e a mensagem
+# thread procura cliente
+#    se acha, da janela[cliente] += (packetObjX,)
+#
+#    senao, da   janela.update({cliente:  []})
+
+#janela['idDoCliente'].append
+#janela['idDoCliente'].sort(key=(lambda x: x.seqnum))
 
 #clientes = []
 
@@ -34,14 +45,11 @@ janela['idDoCliente'].sort(key=(lambda x: x.seqnum))
 #print(d['5'])
 
 
-class Clients:
-    seqnum   = None
+class Client:
     clientID = None
-    msg      = None
 
-    def __init__(self, packet):
-        print("aehoo")
-
+    def __init__(self, clientID):
+        self.clientID = clientID
 
 
 # Função de thread
@@ -93,8 +101,10 @@ def threaded_client(s, data, addr, Wrx, Perror):
 
         # Gera um número aleatório entre 0 e 1 para simular erros no md5
         error_chance = random.uniform(0, 1)
-        if print_stuff is 1: print("============== ERROR_CHANCE ==============", error_chance)
-        if (error_chance < Perror):
+        if print_stuff is 1 and Perror > 0:
+            print("============== ERROR_CHANCE ==============", error_chance)
+
+        if error_chance < Perror:
             ack_hash = hashlib.md5(ack_hash).digest()
             print(ack_hash)
 
@@ -113,6 +123,22 @@ def threaded_client(s, data, addr, Wrx, Perror):
 
 # Função principal do programa
 def main():
+    janela['331311'] = (2, 2, 2)
+
+    cliente = '331311'
+
+    # Cliente ja existe, append na msg
+    if cliente in [x for x in janela]:
+        print("Cliente ja existe")
+        janela[cliente] += ("mensagem 1",)
+
+    # Cliente não existe, da um update no dicionario e adiciona o cliente
+    else:
+        janela.update({cliente:  []})
+
+    for value in janela.values():
+        print(value)
+
     udp_ip = '127.0.0.1'         # Ip local
     arquivo = sys.argv[1]        # Arquivo onde salvar as msgs
     port = int(sys.argv[2])      # Porto
@@ -136,6 +162,7 @@ def main():
         if print_stuff is 1: print("Waiting for datagram...")
 
         (data, addr) = s.recvfrom(16384)
+        s.rec
 
         threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror)).start()
 
