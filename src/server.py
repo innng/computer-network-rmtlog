@@ -47,9 +47,13 @@ janela = {
 
 class Client:
     clientID = None
+    seqNum = None
+    msg = None
 
-    def __init__(self, clientID):
+    def __init__(self, seqNum, msg, clientID):
         self.clientID = clientID
+        self.seqNum = seqNum
+        self.msg = msg
 
 
 # Função de thread
@@ -91,6 +95,22 @@ def threaded_client(s, data, addr, Wrx, Perror):
     if (msg_hash[0] == test_hash):
         if print_stuff is 1: print("Test passed! Both Hashes are the same!")
 
+        #Armazena na janela
+        client = Client(msg_header[0], msg[0].decode('ascii'), str(addr[1]))
+        #print(client.seqNum, client.msg, client.clientID, '<<<<<<<<<<<<<<<<<<<<<<<<<')
+
+        # Cliente ja existe, append na msg
+        if client.clientID in [x for x in janela]:
+            print("Cliente ja existe")
+            janela[client] += ("mensagem 1",)
+
+        # Cliente não existe, da um update no dicionario e adiciona o cliente
+        else:
+            janela.update({client: []})
+
+        for value in janela.values():
+            print(value)
+
         # Envia o ack confirmando o recebimento da mensagem
         ack = struct.pack("!QQL", *msg_header)
         ack_hash = hashlib.md5(ack).digest()
@@ -123,22 +143,6 @@ def threaded_client(s, data, addr, Wrx, Perror):
 
 # Função principal do programa
 def main():
-    janela['331311'] = (2, 2, 2)
-
-    cliente = '331311'
-
-    # Cliente ja existe, append na msg
-    if cliente in [x for x in janela]:
-        print("Cliente ja existe")
-        janela[cliente] += ("mensagem 1",)
-
-    # Cliente não existe, da um update no dicionario e adiciona o cliente
-    else:
-        janela.update({cliente:  []})
-
-    for value in janela.values():
-        print(value)
-
     udp_ip = '127.0.0.1'         # Ip local
     arquivo = sys.argv[1]        # Arquivo onde salvar as msgs
     port = int(sys.argv[2])      # Porto
@@ -162,7 +166,6 @@ def main():
         if print_stuff is 1: print("Waiting for datagram...")
 
         (data, addr) = s.recvfrom(16384)
-        s.rec
 
         threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror)).start()
 
