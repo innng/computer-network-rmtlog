@@ -16,8 +16,8 @@ def main():
     start = time.time()
 
     s = ClientSocket(hostPort)
-    window = clientWindow.Window(fn, wtx, tout, perror)
-    window.slidingWindow(s)
+    window = clientWindow.Window(fn, wtx, tout, perror, s)
+    window.slidingWindow()
 
     end = time.time()
     elapsed = end - start
