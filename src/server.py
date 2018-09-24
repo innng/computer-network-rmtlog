@@ -16,12 +16,32 @@ import numpy
 
 print_stuff = 1
 
-clients = []
+#clients = []
 
 #d = {'5': []}
+janela = {'idDoCliente': []}
 
+janela['idDoCliente'].append
+janela['idDoCliente'].sort(key=(lambda x: x.seqnum))
+
+#clientes = []
+
+#client1 = Clients()
+#clientes.append(client1)
+
+#if client1.addr in [x.addr for x in clientes]
 #d['5'].append(6)
 #print(d['5'])
+
+
+class Clients:
+    seqnum   = None
+    clientID = None
+    msg      = None
+
+    def __init__(self, packet):
+        print("aehoo")
+
 
 
 # Função de thread
@@ -93,11 +113,14 @@ def threaded_client(s, data, addr, Wrx, Perror):
 
 # Função principal do programa
 def main():
-    udp_ip = '127.0.0.1'   # Ip local
-    arquivo = sys.argv[1]  # Arquivo onde salvar as msgs
-    port = int(sys.argv[2])     # Porto
-    Wrx = int(sys.argv[3])   # Tamanho da janela deslizante
-    Perror = float(sys.argv[4])   # Porcentagem de erros a serem gerados
+    udp_ip = '127.0.0.1'         # Ip local
+    arquivo = sys.argv[1]        # Arquivo onde salvar as msgs
+    port = int(sys.argv[2])      # Porto
+    Wrx = int(sys.argv[3])       # Tamanho da janela deslizante
+    Perror = float(sys.argv[4])  # Porcentagem de erros a serem gerados
+
+    print("Server writing to", arquivo)
+    print("Wrx =", Wrx, "probError =", Perror)
 
     # Criação do socketstruct sockaddr_in
     s = socket.socket(socket.AF_INET,        # INTERNET
@@ -106,7 +129,7 @@ def main():
 
     # Bind
     s.bind((udp_ip, port))
-    if print_stuff is 1: print("Socket bind done!")
+    if print_stuff is 1: print("Server UDP socket bound to ", udp_ip, ":", port, sep='')
 
     while True:
         # Esperando receber datagrama

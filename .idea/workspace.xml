@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0af0cb97-42a8-4ef2-ac86-84aab8f10edb" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/programa-teste/saida.txt" beforeDir="false" afterPath="$PROJECT_DIR$/programa-teste/saida.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,7 +16,8 @@
       <usages-collector id="statistics.lifecycle.project">
         <counts>
           <entry key="project.open.time.11" value="1" />
-          <entry key="project.opened" value="1" />
+          <entry key="project.open.time.25" value="1" />
+          <entry key="project.opened" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -30,12 +32,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="207" />
+          <entry key="py" value="804" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="207" />
+          <entry key="Python" value="804" />
         </counts>
       </usages-collector>
     </session>
@@ -77,12 +79,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
+            <state relative-caret-position="366">
+              <caret line="131" column="80" selection-start-line="131" selection-start-column="80" selection-end-line="131" selection-end-column="80" />
               <folding>
-                <element signature="e#91#104#0" expanded="true" />
-                <marker date="1537740185319" expanded="true" signature="469:470" ph="..." />
-                <marker date="1537740185319" expanded="true" signature="469:677" ph="..." />
+                <element signature="e#143#156#0" expanded="true" />
+                <marker date="1537791285388" expanded="true" signature="582:681" ph="..." />
               </folding>
             </state>
           </provider>
@@ -91,7 +92,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/generate_log.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
+            <state relative-caret-position="34">
               <caret line="2" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
@@ -100,7 +101,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/threading_udp.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
+            <state relative-caret-position="374">
               <caret line="24" selection-start-line="24" selection-end-line="24" />
               <folding>
                 <element signature="e#78#97#0" expanded="true" />
@@ -112,8 +113,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/clientWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1500">
-              <caret line="118" column="22" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="22" />
+            <state relative-caret-position="1904">
+              <caret line="143" selection-start-line="143" selection-end-line="143" />
             </state>
           </provider>
         </entry>
@@ -121,11 +122,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/servidor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="43" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="43" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="136">
+              <caret line="8" selection-start-line="8" selection-end-line="8" />
             </state>
           </provider>
         </entry>
@@ -165,8 +163,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="width" value="941" />
-    <option name="height" value="916" />
+    <option name="width" value="873" />
+    <option name="height" value="735" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -223,8 +221,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="941" height="916" extended-state="0" />
-    <editor active="true" />
+    <frame x="0" y="0" width="873" height="735" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.27272728" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -263,13 +260,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/generate_log.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/programa-teste/log2.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -280,9 +270,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="366">
+          <caret line="131" column="80" selection-start-line="131" selection-start-column="80" selection-end-line="131" selection-end-column="80" />
+          <folding>
+            <element signature="e#143#156#0" expanded="true" />
+            <marker date="1537791285388" expanded="true" signature="582:681" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/generate_log.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/threading_udp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
+        <state relative-caret-position="374">
           <caret line="24" selection-start-line="24" selection-end-line="24" />
           <folding>
             <element signature="e#78#97#0" expanded="true" />
@@ -290,32 +298,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/servidor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="43" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/clientWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1500">
-          <caret line="118" column="22" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="22" />
+        <state relative-caret-position="1904">
+          <caret line="143" selection-start-line="143" selection-end-line="143" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/server.py">
+    <entry file="file://$PROJECT_DIR$/src/servidor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
-          <folding>
-            <element signature="e#91#104#0" expanded="true" />
-            <marker date="1537740185319" expanded="true" signature="469:470" ph="..." />
-            <marker date="1537740185319" expanded="true" signature="469:677" ph="..." />
-          </folding>
+        <state relative-caret-position="136">
+          <caret line="8" selection-start-line="8" selection-end-line="8" />
         </state>
       </provider>
     </entry>
