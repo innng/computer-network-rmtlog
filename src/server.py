@@ -1,20 +1,18 @@
 """Servidor."""
 # classe janela: 1 obj pra cada cliente
 # vetor janelas (collections?)
-#
-
+# GRAVAR ARQUIVO
+# Fazer janela
+# Escrever na Doc
+# GG
 
 import socket
 import struct
-import socketserver
 import sys
 import threading
 import hashlib
+import random
 import numpy
-import socketserver
-
-# print (hashlib.md5(b'teste').hexdigest())
-# arquivo port Wrx Perror
 
 print_stuff = 1
 
@@ -26,30 +24,8 @@ clients = []
 #print(d['5'])
 
 
-# class ThreadedServer(object):
-#     def __init__(self, host, port):
-#         self.host = host
-#         self.port = port
-#         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#         # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-#         self.sock.bind((self.host, self.port))
-#
-#     def WaitDatagram(self):
-#
-#         while True:
-#             # Esperando receber datagrama
-#             if print_stuff == 1:
-#                 print("Waiting for datagram...")
-#
-#             (data, addr) = self.sock.recvfrom(16384)
-#             print("Data received: ", data, "\n")
-#             print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
-#             print('Received %s bytes' % len(data))
-#
-#             threading.Thread(target=self.threaded_client, args=(data, addr)).start()
-
 # Função de thread
-def threaded_client(s, data, addr):
+def threaded_client(s, data, addr, Wrx, Perror):
     if print_stuff is 1: print("Thread created:", threading.currentThread())
 
     if print_stuff is 1: print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
@@ -74,7 +50,7 @@ def threaded_client(s, data, addr):
 
     # Leio a mensagem dando unpack de um offset igual ao tamanho do cabeçalho (22)
     msg = struct.unpack_from("!"+str(msg_size)+"s", data[:22+msg_size], 22)
-    if print_stuff is 1: print("Message: ", msg[0])
+    if print_stuff is 1: print("Message: ", msg[0].decode('ascii'))
 
     # Lẽ o hash md5 da mensagem
     msg_hash = struct.unpack_from("!16s", data[:22+msg_size+16], 22+msg_size)
@@ -83,15 +59,30 @@ def threaded_client(s, data, addr):
     test_hash = hashlib.md5(data[0:22+msg_size]).digest()
     if print_stuff is 1: print("Test Hash:", test_hash)
 
-    # Testa se o hash enviado e o testado com o cabeçalho e msg são iguais
+    # Testa se o hash enviado e o testado com o cabeçalho+msg são iguais
     if (msg_hash[0] == test_hash):
         if print_stuff is 1: print("Test passed! Both Hashes are the same!")
 
         # Envia o ack confirmando o recebimento da mensagem
         ack = struct.pack("!QQL", *msg_header)
         ack_hash = hashlib.md5(ack).digest()
+        if print_stuff is 1: print(ack_hash)
+
+        #Armazenas na janela deslizante
+
+
+        # Gera um número aleatório entre 0 e 1 para simular erros no md5
+        error_chance = random.uniform(0, 1)
+        if print_stuff is 1: print("============== ERROR_CHANCE ==============", error_chance)
+        if (error_chance < Perror):
+            ack_hash = hashlib.md5(ack_hash).digest()
+            print(ack_hash)
+
+        # Concatena o cabeçalho com o novo hash
         ack += ack_hash
         if print_stuff is 1: print("ACK w/ hash:", ack)
+
+        # Envia o ACK para o cliente
         s.sendto(ack, addr)
 
         if print_stuff is 1: print("Ack sent to client", addr[1], "\n")
@@ -104,9 +95,9 @@ def threaded_client(s, data, addr):
 def main():
     udp_ip = '127.0.0.1'   # Ip local
     arquivo = sys.argv[1]  # Arquivo onde salvar as msgs
-    port = sys.argv[2]     # Porto
-    Wrx = sys.argv[3]      # Tamanho da janela deslizante
-    Perror = sys.argv[4]   # Porcentagem de erros a serem gerados
+    port = int(sys.argv[2])     # Porto
+    Wrx = int(sys.argv[3])   # Tamanho da janela deslizante
+    Perror = float(sys.argv[4])   # Porcentagem de erros a serem gerados
 
     # Criação do socketstruct sockaddr_in
     s = socket.socket(socket.AF_INET,        # INTERNET
@@ -114,7 +105,7 @@ def main():
     if print_stuff is 1: print("Socket created!")
 
     # Bind
-    s.bind((udp_ip, int(port)))
+    s.bind((udp_ip, port))
     if print_stuff is 1: print("Socket bind done!")
 
     while True:
@@ -123,9 +114,7 @@ def main():
 
         (data, addr) = s.recvfrom(16384)
 
-        threading.Thread(target=threaded_client, args=(s, data, addr)).start()
-
-    # ThreadedServer(udp_ip, port).WaitDatagram()
+        threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror)).start()
 
 
 if __name__ == '__main__':

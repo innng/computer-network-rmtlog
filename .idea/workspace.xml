@@ -50,12 +50,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="2284" />
+          <entry key="py" value="2961" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="2284" />
+          <entry key="Python" value="2961" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -77,13 +77,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="652">
-              <caret line="99" column="81" selection-start-line="99" selection-start-column="81" selection-end-line="99" selection-end-column="81" />
+            <state relative-caret-position="450">
+              <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
               <folding>
                 <element signature="e#91#104#0" expanded="true" />
-                <marker date="1537720189527" expanded="true" signature="400:1201" ph="..." />
-                <marker date="1537720189527" expanded="true" signature="1334:1335" ph="..." />
-                <marker date="1537720189527" expanded="true" signature="1334:1542" ph="..." />
+                <marker date="1537740185319" expanded="true" signature="469:470" ph="..." />
+                <marker date="1537740185319" expanded="true" signature="469:677" ph="..." />
               </folding>
             </state>
           </provider>
@@ -113,7 +112,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/clientWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="386">
+            <state relative-caret-position="1500">
               <caret line="118" column="22" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="22" />
             </state>
           </provider>
@@ -165,8 +164,8 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
-    <option name="width" value="840" />
+  <component name="ProjectFrameBounds">
+    <option name="width" value="941" />
     <option name="height" value="916" />
   </component>
   <component name="ProjectView">
@@ -224,7 +223,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="840" height="916" extended-state="4" />
+    <frame x="0" y="0" width="941" height="916" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.27272728" />
@@ -291,13 +290,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/clientWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="386">
-          <caret line="118" column="22" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/servidor.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -308,15 +300,21 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/clientWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1500">
+          <caret line="118" column="22" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="652">
-          <caret line="99" column="81" selection-start-line="99" selection-start-column="81" selection-end-line="99" selection-end-column="81" />
+        <state relative-caret-position="450">
+          <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
           <folding>
             <element signature="e#91#104#0" expanded="true" />
-            <marker date="1537720189527" expanded="true" signature="400:1201" ph="..." />
-            <marker date="1537720189527" expanded="true" signature="1334:1335" ph="..." />
-            <marker date="1537720189527" expanded="true" signature="1334:1542" ph="..." />
+            <marker date="1537740185319" expanded="true" signature="469:470" ph="..." />
+            <marker date="1537740185319" expanded="true" signature="469:677" ph="..." />
           </folding>
         </state>
       </provider>
