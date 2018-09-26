@@ -25,8 +25,8 @@ janela = {
 
 # packetObj: seqnum, msg
 
-# thread confirma mensagem
-# thread monta o objeto packetObj com o seqnum e a mensagem
+# thread confirma mensagem - OK
+# thread monta o objeto packetObj com o seqnum e a mensagem e ID - OK
 # thread procura cliente
 #    se acha, da janela[cliente] += (packetObjX,)
 #
@@ -99,25 +99,26 @@ def threaded_client(s, data, addr, Wrx, Perror):
         client = Client(msg_header[0], msg[0].decode('ascii'), str(addr[1]))
         #print(client.seqNum, client.msg, client.clientID, '<<<<<<<<<<<<<<<<<<<<<<<<<')
 
-        # Cliente ja existe, append na msg
-        if client.clientID in [x for x in janela]:
-            print("Cliente ja existe")
-            janela[client] += ("mensagem 1",)
+        # Armazenas na janela deslizante
+        lock = threading.Lock()
 
-        # Cliente não existe, da um update no dicionario e adiciona o cliente
-        else:
-            janela.update({client: []})
+        with lock:
+            # Cliente ja existe, append na msg
+            if client.clientID in [x for x in janela]:
+                print("Cliente ja existe")
+                janela[client] += ("mensagem 1",)
 
-        for value in janela.values():
-            print(value)
+            # Cliente não existe, da um update no dicionario e adiciona o cliente
+            else:
+                janela.update({client: []})
 
-        # Envia o ack confirmando o recebimento da mensagem
+            #for value in list(janela):
+             #   print(value)
+
+        # Envia o ack confirmand: o o recebimento da mensagem
         ack = struct.pack("!QQL", *msg_header)
         ack_hash = hashlib.md5(ack).digest()
         if print_stuff is 1: print(ack_hash)
-
-        #Armazenas na janela deslizante
-
 
         # Gera um número aleatório entre 0 e 1 para simular erros no md5
         error_chance = random.uniform(0, 1)
