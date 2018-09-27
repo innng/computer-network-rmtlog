@@ -57,7 +57,7 @@ class Client:
 
 
 # Função de thread
-def threaded_client(s, data, addr, Wrx, Perror):
+def threaded_client(s, data, addr, Wrx, Perror, output_file):
     if print_stuff is 1: print("Thread created:", threading.currentThread())
 
     if print_stuff is 1: print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
@@ -95,25 +95,28 @@ def threaded_client(s, data, addr, Wrx, Perror):
     if (msg_hash[0] == test_hash):
         if print_stuff is 1: print("Test passed! Both Hashes are the same!")
 
+        # Escreve a mensagem recebida no arquivo de saída
+        output_file.write(msg[0].decode('ascii')+'\n')
+
         #Armazena na janela
         client = Client(msg_header[0], msg[0].decode('ascii'), str(addr[1]))
         #print(client.seqNum, client.msg, client.clientID, '<<<<<<<<<<<<<<<<<<<<<<<<<')
 
-        # Armazenas na janela deslizante
-        lock = threading.Lock()
+        # Armazena na janela deslizante
+        # lock = threading.Lock()
 
-        with lock:
-            # Cliente ja existe, append na msg
-            if client.clientID in [x for x in janela]:
-                print("Cliente ja existe")
-                janela[client] += ("mensagem 1",)
-
-            # Cliente não existe, da um update no dicionario e adiciona o cliente
-            else:
-                janela.update({client: []})
-
-            #for value in list(janela):
-             #   print(value)
+        # with lock:
+        #     # Cliente ja existe, append na msg
+        #     if client.clientID in [x for x in janela]:
+        #         print("Cliente ja existe")
+        #         janela[client] += ("mensagem 1",)
+        #
+        #     # Cliente não existe, da um update no dicionario e adiciona o cliente
+        #     else:
+        #         janela.update({client: []})
+        #
+        #     #for value in list(janela):
+        #      #   print(value)
 
         # Envia o ack confirmand: o o recebimento da mensagem
         ack = struct.pack("!QQL", *msg_header)
@@ -153,6 +156,9 @@ def main():
     print("Server writing to", arquivo)
     print("Wrx =", Wrx, "probError =", Perror)
 
+    # Abre o arquivo de saída
+    output_file = open(arquivo, "a")
+
     # Criação do socketstruct sockaddr_in
     s = socket.socket(socket.AF_INET,        # INTERNET
                       socket.SOCK_DGRAM, 0)  # UDP
@@ -168,7 +174,9 @@ def main():
 
         (data, addr) = s.recvfrom(16384)
 
-        threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror)).start()
+        threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror, output_file)).start()
+
+    output_file.close()
 
 
 if __name__ == '__main__':
