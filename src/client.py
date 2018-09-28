@@ -3,9 +3,12 @@ import socket
 import time
 import sys
 
+
 def main():
     if len(sys.argv) < 6:
         sys.exit('Incorrect number of parameters')
+
+    start = time.time()
 
     fn = sys.argv[1]
     hostPort = sys.argv[2]
@@ -13,15 +16,14 @@ def main():
     tout = int(sys.argv[4])
     perror = float(sys.argv[5])
 
-    start = time.time()
-
-    s = ClientSocket(hostPort)
-    window = clientWindow.Window(fn, wtx, tout, perror, s)
+    sock = ClientSocket(hostPort)
+    window = clientWindow.Window(fn, wtx, tout, perror, sock)
     window.slidingWindow()
+
 
     end = time.time()
     elapsed = end - start
-    print(elapsed)
+    print(format(elapsed, '.4f'))
 
 
 class ClientSocket:
