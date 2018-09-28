@@ -106,17 +106,18 @@ def threaded_client(s, data, addr, Wrx, Perror, output_file):
         # lock = threading.Lock()
 
         # with lock:
-        #     # Cliente ja existe, append na msg
-        #     if client.clientID in [x for x in janela]:
-        #         print("Cliente ja existe")
-        #         janela[client] += ("mensagem 1",)
-        #
-        #     # Cliente não existe, da um update no dicionario e adiciona o cliente
-        #     else:
-        #         janela.update({client: []})
-        #
-        #     #for value in list(janela):
-        #      #   print(value)
+        # Cliente ja existe, append na msg
+        if client.clientID in [x for x in janela]:
+            print("Cliente ja existe")
+            janela[client] += ("mensagem 1",)
+            if janela
+
+        # Cliente não existe, da um update no dicionario e adiciona o cliente
+        else:
+            janela.update({client: []})
+
+        #for value in list(janela):
+         #   print(value)
 
         # Envia o ack confirmand: o o recebimento da mensagem
         ack = struct.pack("!QQL", *msg_header)
@@ -174,7 +175,8 @@ def main():
 
         (data, addr) = s.recvfrom(16384)
 
-        threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror, output_file)).start()
+        threaded_client(s, data, addr, Wrx, Perror, output_file)
+        #threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror, output_file)).start()
 
     output_file.close()
 
