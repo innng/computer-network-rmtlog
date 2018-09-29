@@ -9,6 +9,7 @@ import sys
 import hashlib
 import random
 import operator
+import time
 
 print_stuff = 1
 
@@ -28,7 +29,7 @@ class Package:
 
 def dump_window_to_file(clientID, output_file):
     # Escreve as mensagens da janela no arquivo de saída
-    for i in range(0, len(window[clientID])-1):
+    for i in range(0, len(window[clientID])):
         output_file.write(window[clientID][i].msg + '\n')
         output_file.flush()
 
@@ -50,6 +51,7 @@ def add_to_window(clientID, package):
 
     # Ordena os pacotes dentro da janela do cliente
     window[clientID].sort(key=operator.attrgetter('seqNum'))
+    # print(window[clientID][0].msg)
 
 
 # Função que testa o pacote
@@ -166,6 +168,7 @@ def main():
         # Esperando receber datagrama
         print("Esperando datagrama...")
         (data, addr) = s.recvfrom(16422)
+
 
         check_package(s, data, addr, Wrx, Perror, output_file)
         #threading.Thread(target=check_package, args=(s, data, addr, Wrx, Perror, output_file)).start()
