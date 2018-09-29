@@ -8,7 +8,7 @@ import time
 
 
 class Window:
-    statistic = None
+    stats = None
     window = None
     perror = None
     sock = None
@@ -28,7 +28,7 @@ class Window:
 
         self.acks = [None] * len(self.log)
         self.window = collections.deque(maxlen=self.wtx)
-        self.statistic = [0] * 3
+        self.stats = {'distMsg': len(self.log), 'sentMsg': 0, 'incMd5': 0}
 
     def slidingWindow(self):
         waitAck = threading.Thread(target=self.confirmationThread)
@@ -41,29 +41,27 @@ class Window:
                 print('acabou')
                 break
 
-            while len(self.window) > 0 and self.acks[self.window[0].seqNum] == 1:
-                teste = self.window.popleft()
-                print('andou', teste.seqNum)
+            while seqNum < len(self.log) and (len(self.window) < self.wtx or self.acks[self.window[0].seqNum] == 1):
+                if len(self.window) > 0:
+                    print(self.window[0].seqNum, self.window[0].seqNum + self.wtx - 1)
 
-            if len(self.window) < self.wtx:
-                print('enviou', seqNum)
                 self.send(seqNum)
                 seqNum += 1
-            else:
-                while self.acks[self.window[0].seqNum] != 1:
-                    pass
-
+            
         waitAck.join()
 
     def send(self, no):
         msg = Package(no, self.log[no])
         self.window.append(msg)
+        self.stats['sentMsg'] += 1
 
         rnd = random.random()
         if rnd < self.perror:
-            print('enviando com erro', no)
+            print('enviou com erro', no)
+            self.stats['incMd5'] += 1
             pkg = msg.changeMd5()
         else:
+            print('enviou', no)
             pkg = msg.getLog()
 
         self.sock.send(pkg)
@@ -72,11 +70,16 @@ class Window:
     def resend(self, msg):
         if self.acks[msg.seqNum] == 1:
             return
-        print('reenviando', msg.seqNum)
+
+        self.stats['sentMsg'] += 1
+
         rnd = random.random()
         if rnd < self.perror:
+            print('reenviou com erro', msg.seqNum)
+            self.stats['incMd5'] += 1
             pkg = msg.changeMd5()
         else:
+            print('reenviou', msg.seqNum)
             pkg = msg.getLog()
 
         self.sock.send(pkg)
@@ -104,6 +107,9 @@ class Window:
             return True
         else:
             return False
+
+    def getStats(self):
+        return (self.stats['distMsg'], self.stats['sentMsg'], self.stats['incMd5'])
 
 class Package:
     seqNum = 0
@@ -164,4 +170,5 @@ class Package:
         self.timer.start()
 
     def resetTimer(self, tout, func, a=None):
+        self.timer.cancel()
         self.setTimer(tout, func, a)

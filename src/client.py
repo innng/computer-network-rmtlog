@@ -23,7 +23,8 @@ def main():
 
     end = time.time()
     elapsed = end - start
-    print(format(elapsed, '.4f'))
+    distMsg, sentMsg, incMd5 = window.getStats()
+    print(distMsg, sentMsg, incMd5, format(elapsed, '.3f'))
 
 
 class ClientSocket:
