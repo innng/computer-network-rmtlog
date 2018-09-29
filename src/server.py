@@ -1,75 +1,62 @@
 """Servidor."""
-# classe janela: 1 obj pra cada cliente
-# vetor janelas (collections?)
-# GRAVAR ARQUIVO
-# Fazer janela
+
 # Escrever na Doc
 # GG
 
 import socket
 import struct
 import sys
-import threading
 import hashlib
 import random
-import numpy
+import operator
 
 print_stuff = 1
 
-clients = []
-
-#d = {'5': []}
-janela = {
-    'idDoCliente': ['packetObj1', 'packetObj2', 'packetObj3', 'packetObj4', 'packetObj5']
+window = {
+    # 'id: [pacote1, pacote2, ...]
 }
 
-# packetObj: seqnum, msg
 
-# thread confirma mensagem - OK
-# thread monta o objeto packetObj com o seqnum e a mensagem e ID - OK
-# thread procura cliente
-#    se acha, da janela[cliente] += (packetObjX,)
-#
-#    senao, da   janela.update({cliente:  []})
-
-#janela['idDoCliente'].append
-#janela['idDoCliente'].sort(key=(lambda x: x.seqnum))
-
-#clientes = []
-
-#client1 = Clients()
-#clientes.append(client1)
-
-#if client1.addr in [x.addr for x in clientes]
-#d['5'].append(6)
-#print(d['5'])
-
-
-class Client:
-    clientID = None
+class Package:
     seqNum = None
     msg = None
 
-    def __init__(self, seqNum, msg, clientID):
-        self.clientID = clientID
-        self.seqNum = seqNum
+    def __init__(self, seqnum, msg) -> None:
+        self.seqNum = seqnum
         self.msg = msg
 
 
-# Função de thread
-def threaded_client(s, data, addr, Wrx, Perror, output_file):
-    if print_stuff is 1: print("Thread created:", threading.currentThread())
+def dump_window_to_file(clientID, output_file):
+    # Escreve as mensagens da janela no arquivo de saída
+    for i in range(0, len(window[clientID])-1):
+        output_file.write(window[clientID][i].msg + '\n')
+        output_file.flush()
 
+    # Esvazia a janela
+    window[clientID].clear()
+
+
+def add_to_window(clientID, package):
+    # Testa se o cliente ja tem uma janela
+    if clientID in [x for x in window]:
+        # Adiciona o pacote na janela do cliente
+        window[clientID].append(package)
+
+    # Cliente não existe, da um update no dicionario e adiciona o cliente
+    # depois, adiciona a mensagem
+    else:
+        window.update({clientID: []})
+        window[clientID].append(package)
+
+    # Ordena os pacotes dentro da janela do cliente
+    window[clientID].sort(key=operator.attrgetter('seqNum'))
+
+
+# Função que testa o pacote
+def check_package(s, data, addr, Wrx, Perror, output_file):
     if print_stuff is 1: print('Incoming datagram from: ', addr[0], ':', str(addr[1]))
     if print_stuff is 1: print('Received %s bytes' % len(data))
-    if print_stuff is 1: print("Data received: ", data)
-
-    # Fazendo o unpacking da mensagem enviada
-    # O  formato "!QQLH" é o especificado na spec do TP
-    # ! = network byte order
-    # Q = unsigned long long (64bits) - Numero de seq. e secs do timestamp
-    # L = unsigned long (32bits)      - Nanosecs do timestamp
-    # H = unsigned short (16 bits)    - Tamanho da msg
+    # if print_stuff is 1: print("Data received: ", data)
 
     # Lê o cabeçalho da mensagem
     msg_header = struct.unpack('!QQL', data[:20])
@@ -82,65 +69,73 @@ def threaded_client(s, data, addr, Wrx, Perror, output_file):
 
     # Leio a mensagem dando unpack de um offset igual ao tamanho do cabeçalho (22)
     msg = struct.unpack_from("!"+str(msg_size)+"s", data[:22+msg_size], 22)
-    if print_stuff is 1: print("Message: ", msg[0].decode('ascii'))
 
     # Lẽ o hash md5 da mensagem
     msg_hash = struct.unpack_from("!16s", data[:22+msg_size+16], 22+msg_size)
-    if print_stuff is 1: print("Hash:     ", msg_hash[0])
 
     test_hash = hashlib.md5(data[0:22+msg_size]).digest()
-    if print_stuff is 1: print("Test Hash:", test_hash)
+
+    clientID = addr[1]
+    messageSeqnum = msg_header[0]
+    clientMessage = msg[0].decode('ascii')
+
+    # Testa se o cliente ja tem uma janela
+    if clientID not in [x for x in window]:
+        # Cliente não existe, da um update no dicionario e adiciona o cliente
+        window.update({clientID: []})
+
+    # Testa se a janela está cheia, se sim, imprima seu conteúdo no arquivo e esvazia a janela
+    if len(window[clientID]) == Wrx:
+        dump_window_to_file(clientID, output_file)
 
     # Testa se o hash enviado e o testado com o cabeçalho+msg são iguais
     if (msg_hash[0] == test_hash):
-        if print_stuff is 1: print("Test passed! Both Hashes are the same!")
+        # Test passed! Both Hashes are the same!
 
-        # Escreve a mensagem recebida no arquivo de saída
-        output_file.write(msg[0].decode('ascii')+'\n')
+        # Seqnum do pacote é menor que o primeiro seqnum na janela + o tamanho
+        # da janela ou a janela está vazia, ou seja, ele cabe na janela
+        if len(window[clientID]) == 0 or messageSeqnum < (window[clientID][0].seqNum + Wrx):
+            # Monto o pacote
+            package = Package(messageSeqnum, clientMessage)
+            # Armazena na janela deslizante
+            add_to_window(clientID, package)
 
-        #Armazena na janela
-        client = Client(msg_header[0], msg[0].decode('ascii'), str(addr[1]))
-        #print(client.seqNum, client.msg, client.clientID, '<<<<<<<<<<<<<<<<<<<<<<<<<')
+            # Monta o ACK para confirmar o recebimento
+            ack = struct.pack("!QQL", *msg_header)
+            ack_hash = hashlib.md5(ack).digest()
 
-        # Armazena na janela deslizante
-        # lock = threading.Lock()
+            # Gera um número aleatório entre 0 e 1 para simular erros no md5
+            error_chance = random.uniform(0, 1)
 
-        # with lock:
-        # Cliente ja existe, append na msg
-        if client.clientID in [x for x in janela]:
-            print("Cliente ja existe")
-            janela[client] += ("mensagem 1",)
-            if janela
+            # Se precisar gerar um erro, faça um hash com o hash (erro)
+            if error_chance < Perror:
+                ack_hash = hashlib.md5(ack_hash).digest()
 
-        # Cliente não existe, da um update no dicionario e adiciona o cliente
-        else:
-            janela.update({client: []})
+            # Concatena o cabeçalho com o novo hash
+            ack += ack_hash
 
-        #for value in list(janela):
-         #   print(value)
+            # Envia o ack confirmando o recebimento da mensagem
+            s.sendto(ack, addr)
 
-        # Envia o ack confirmand: o o recebimento da mensagem
-        ack = struct.pack("!QQL", *msg_header)
-        ack_hash = hashlib.md5(ack).digest()
-        if print_stuff is 1: print(ack_hash)
+        # Pacote recebido tem seqnum menor que o primeiro da janela
+        # então é só confirmar
+        elif messageSeqnum < window[clientID][0].seqNum:
+            # Envia o ack confirmand: o o recebimento da mensagem
+            ack = struct.pack("!QQL", *msg_header)
+            ack_hash = hashlib.md5(ack).digest()
 
-        # Gera um número aleatório entre 0 e 1 para simular erros no md5
-        error_chance = random.uniform(0, 1)
-        if print_stuff is 1 and Perror > 0:
-            print("============== ERROR_CHANCE ==============", error_chance)
+            # Gera um número aleatório entre 0 e 1 para simular erros no md5
+            error_chance = random.uniform(0, 1)
 
-        if error_chance < Perror:
-            ack_hash = hashlib.md5(ack_hash).digest()
-            print(ack_hash)
+            # Gera erro no hash se necessário
+            if error_chance < Perror:
+                ack_hash = hashlib.md5(ack_hash).digest()
 
-        # Concatena o cabeçalho com o novo hash
-        ack += ack_hash
-        if print_stuff is 1: print("ACK w/ hash:", ack)
+            # Concatena o cabeçalho com o novo hash
+            ack += ack_hash
 
-        # Envia o ACK para o cliente
-        s.sendto(ack, addr)
-
-        if print_stuff is 1: print("Ack sent to client", addr[1], "\n")
+            # Envia o ACK para o cliente
+            s.sendto(ack, addr)
     else:
         # Descartar mensagem
         if print_stuff is 1: print("Hashes are not the same, message DISCARDED!\n")
@@ -158,27 +153,22 @@ def main():
     print("Wrx =", Wrx, "probError =", Perror)
 
     # Abre o arquivo de saída
-    output_file = open(arquivo, "a")
+    output_file = open(arquivo, "w")
 
     # Criação do socketstruct sockaddr_in
     s = socket.socket(socket.AF_INET,        # INTERNET
                       socket.SOCK_DGRAM, 0)  # UDP
-    if print_stuff is 1: print("Socket created!")
 
     # Bind
     s.bind((udp_ip, port))
-    if print_stuff is 1: print("Server UDP socket bound to ", udp_ip, ":", port, sep='')
 
     while True:
         # Esperando receber datagrama
-        if print_stuff is 1: print("Waiting for datagram...")
+        print("Esperando datagrama...")
+        (data, addr) = s.recvfrom(16422)
 
-        (data, addr) = s.recvfrom(16384)
-
-        threaded_client(s, data, addr, Wrx, Perror, output_file)
-        #threading.Thread(target=threaded_client, args=(s, data, addr, Wrx, Perror, output_file)).start()
-
-    output_file.close()
+        check_package(s, data, addr, Wrx, Perror, output_file)
+        #threading.Thread(target=check_package, args=(s, data, addr, Wrx, Perror, output_file)).start()
 
 
 if __name__ == '__main__':
