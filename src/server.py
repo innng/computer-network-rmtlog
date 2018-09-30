@@ -9,6 +9,7 @@ import sys
 import hashlib
 import random
 import operator
+import threading
 import time
 
 print_stuff = 1
@@ -27,7 +28,20 @@ class Package:
         self.msg = msg
 
 
+# def move_window(clientID, output_file, Wrx):
+#     for i in range(0, len(window[clientID])):
+#         if len(window[clientID]) > 0 and window[clientID][0].seqNum%Wrx == (0+i):
+#             print("ESVAZIOU")
+#             output_file.write(window[clientID][i].msg + '\n')
+#             output_file.flush()
+#             window[clientID].pop(i)
+#             i -= 1
+
+
 def dump_window_to_file(clientID, output_file):
+    # Ordena os pacotes dentro da janela do cliente
+    window[clientID].sort(key=operator.attrgetter('seqNum'))
+
     # Escreve as mensagens da janela no arquivo de saída
     for i in range(0, len(window[clientID])):
         output_file.write(window[clientID][i].msg + '\n')
@@ -51,7 +65,6 @@ def add_to_window(clientID, package):
 
     # Ordena os pacotes dentro da janela do cliente
     window[clientID].sort(key=operator.attrgetter('seqNum'))
-    # print(window[clientID][0].msg)
 
 
 # Função que testa o pacote
@@ -80,6 +93,9 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
     clientID = addr[1]
     messageSeqnum = msg_header[0]
     clientMessage = msg[0].decode('ascii')
+
+    # timer = threading.Timer(30, dump_window_to_file, args=(clientID, output_file))
+    # timer.start()
 
     # Testa se o cliente ja tem uma janela
     if clientID not in [x for x in window]:
@@ -142,6 +158,9 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
         # Descartar mensagem
         if print_stuff is 1: print("Hashes are not the same, message DISCARDED!\n")
 
+    # move_window(clientID, output_file, Wrx)
+
+
 
 # Função principal do programa
 def main():
@@ -168,7 +187,6 @@ def main():
         # Esperando receber datagrama
         print("Esperando datagrama...")
         (data, addr) = s.recvfrom(16422)
-
 
         check_package(s, data, addr, Wrx, Perror, output_file)
         #threading.Thread(target=check_package, args=(s, data, addr, Wrx, Perror, output_file)).start()
