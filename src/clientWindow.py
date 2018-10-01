@@ -60,7 +60,6 @@ class Window:
         while True:
             # checa se todas as mensagens foram enviadas
             if seqNum > len(self.log) - 1:
-                print('acabou')
                 break
 
             # envia as mensagens de log enquanto:
@@ -87,12 +86,10 @@ class Window:
         rnd = random.random()
         # se o número é menor que o perror, envia md5 errado
         if rnd < self.perror:
-            print('enviou com erro', no)
             self.stats['incMd5'] += 1
             pkg = msg.changeMd5()
 
         else:
-            print('enviou', no)
             pkg = msg.getLog()
 
         # envia mensagem de log e inicializa o temporizador
@@ -111,11 +108,9 @@ class Window:
         rnd = random.random()
         # se o número é menor que o perror, reenvia com md5 errado
         if rnd < self.perror:
-            print('reenviou com erro', msg.seqNum)
             self.stats['incMd5'] += 1
             pkg = msg.changeMd5()
         else:
-            print('reenviou', msg.seqNum)
             pkg = msg.getLog()
 
         # reenvia mensagem de log e reseta o temporizador
@@ -136,7 +131,6 @@ class Window:
             if self.checkAck(pkg):
                 # extraí o número da mensagem que foi confirmada
                 num,_,_ = struct.unpack('!QQL', pkg[:20])
-                print('confirmou', num)
                 # se ainda não houve confirmação
                 if self.acks[num] is None:
                     with lock:
