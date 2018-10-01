@@ -57,17 +57,14 @@ class Window:
         # número da mensagem de log
         seqNum = 0
 
-        while True:
-            # checa se todas as mensagens foram enviadas
-            if seqNum > len(self.log) - 1:
-                break
-
+        # checa se todas as mensagens foram enviadas
+        while seqNum < len(self.log):
             # envia as mensagens de log enquanto:
             # 1. ainda houver mensagens,
             # 2. a janela tiver espaço disponível,
             # 3. o pacote no início da janela já foi confirmado
             while seqNum < len(self.log) and (len(self.window) < self.wtx or self.acks[self.window[0].seqNum] == 1):
-
+                print(seqNum)
                 self.send(seqNum)
                 seqNum += 1
 
@@ -106,7 +103,7 @@ class Window:
 
         # cálcula número aleatório
         rnd = random.random()
-        # se o número é menor que o perror, reenvia com md5 errado
+        # se o número é menor que o 4perror, reenvia com md5 errado
         if rnd < self.perror:
             self.stats['incMd5'] += 1
             pkg = msg.changeMd5()
