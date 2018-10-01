@@ -15,7 +15,7 @@ import time
 print_stuff = 1
 
 window = {
-    # 'id: [pacote1, pacote2, ...]
+    # 'id: ([pacote1, pacote2, ...], seqNum)
 }
 
 
@@ -28,43 +28,45 @@ class Package:
         self.msg = msg
 
 
-# def move_window(clientID, output_file, Wrx):
-#     for i in range(0, len(window[clientID])):
-#         if len(window[clientID]) > 0 and window[clientID][0].seqNum%Wrx == (0+i):
-#             print("ESVAZIOU")
-#             output_file.write(window[clientID][i].msg + '\n')
-#             output_file.flush()
-#             window[clientID].pop(i)
-#             i -= 1
+def move_window(clientID, output_file, Wrx):
+    for i in range(0, len(window[clientID][0])):
+        if len(window[clientID][0]) > 0 and (window[clientID][0][0].seqNum == (window[clientID][1] + 1)):
+            output_file.write(window[clientID][0][i].msg + '\n')
+            output_file.flush()
+            window[clientID][0].pop(i)
+            window[clientID] = (window[clientID][0], window[clientID][1] + 1)
+            i -= 1
 
 
 def dump_window_to_file(clientID, output_file):
     # Ordena os pacotes dentro da janela do cliente
-    window[clientID].sort(key=operator.attrgetter('seqNum'))
+    window[clientID][0].sort(key=operator.attrgetter('seqNum'))
 
     # Escreve as mensagens da janela no arquivo de saída
-    for i in range(0, len(window[clientID])):
-        output_file.write(window[clientID][i].msg + '\n')
+    for i in range(0, len(window[clientID][0])):
+        output_file.write(window[clientID][0][i].msg + '\n')
         output_file.flush()
-
+        #print(window[clientID][0][0].seqNum, window[clientID][1])
+        window[clientID] = (window[clientID][0], window[clientID][0][i].seqNum)
+        #print(window[clientID][0][0].seqNum, window[clientID][1])
     # Esvazia a janela
-    window[clientID].clear()
+    window[clientID][0].clear()
 
 
 def add_to_window(clientID, package):
     # Testa se o cliente ja tem uma janela
     if clientID in [x for x in window]:
         # Adiciona o pacote na janela do cliente
-        window[clientID].append(package)
+        window[clientID][0].append(package)
 
     # Cliente não existe, da um update no dicionario e adiciona o cliente
     # depois, adiciona a mensagem
     else:
-        window.update({clientID: []})
-        window[clientID].append(package)
+        window.update({clientID: ([],-1)})
+        window[clientID][0].append(package)
 
     # Ordena os pacotes dentro da janela do cliente
-    window[clientID].sort(key=operator.attrgetter('seqNum'))
+    window[clientID][0].sort(key=operator.attrgetter('seqNum'))
 
 
 # Função que testa o pacote
@@ -100,19 +102,19 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
     # Testa se o cliente ja tem uma janela
     if clientID not in [x for x in window]:
         # Cliente não existe, da um update no dicionario e adiciona o cliente
-        window.update({clientID: []})
+        window.update({clientID: ([], -1)})
 
     # Testa se a janela está cheia, se sim, imprima seu conteúdo no arquivo e esvazia a janela
-    if len(window[clientID]) == Wrx:
-        dump_window_to_file(clientID, output_file)
+    #if len(window[clientID][0]) == Wrx:
+        #dump_window_to_file(clientID, output_file)
 
     # Testa se o hash enviado e o testado com o cabeçalho+msg são iguais
     if (msg_hash[0] == test_hash):
         # Test passed! Both Hashes are the same!
-
+        print("PASSOU O HASH")
         # Seqnum do pacote é menor que o primeiro seqnum na janela + o tamanho
         # da janela ou a janela está vazia, ou seja, ele cabe na janela
-        if len(window[clientID]) == 0 or messageSeqnum < (window[clientID][0].seqNum + Wrx):
+        if len(window[clientID][0]) == 0 or messageSeqnum < (window[clientID][0][0].seqNum + Wrx):
             # Monto o pacote
             package = Package(messageSeqnum, clientMessage)
             # Armazena na janela deslizante
@@ -131,13 +133,13 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
 
             # Concatena o cabeçalho com o novo hash
             ack += ack_hash
-
+            print("ACK FOI", clientMessage)
             # Envia o ack confirmando o recebimento da mensagem
             s.sendto(ack, addr)
 
         # Pacote recebido tem seqnum menor que o primeiro da janela
         # então é só confirmar
-        elif messageSeqnum < window[clientID][0].seqNum:
+        elif messageSeqnum < window[clientID][0][0].seqNum:
             # Envia o ack confirmand: o o recebimento da mensagem
             ack = struct.pack("!QQL", *msg_header)
             ack_hash = hashlib.md5(ack).digest()
@@ -158,7 +160,7 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
         # Descartar mensagem
         if print_stuff is 1: print("Hashes are not the same, message DISCARDED!\n")
 
-    # move_window(clientID, output_file, Wrx)
+    move_window(clientID, output_file, Wrx)
 
 
 
