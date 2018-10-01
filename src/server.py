@@ -29,7 +29,8 @@ class Package:
 
 
 def move_window(clientID, output_file, Wrx):
-    for i in range(0, len(window[clientID][0])):
+    for i in range(len(window[clientID][0])):
+        print(window[clientID][0][0].seqNum == (window[clientID][1] + 1))
         if len(window[clientID][0]) > 0 and (window[clientID][0][0].seqNum == (window[clientID][1] + 1)):
             output_file.write(window[clientID][0][i].msg + '\n')
             output_file.flush()
@@ -105,8 +106,8 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
         window.update({clientID: ([], -1)})
 
     # Testa se a janela está cheia, se sim, imprima seu conteúdo no arquivo e esvazia a janela
-    #if len(window[clientID][0]) == Wrx:
-        #dump_window_to_file(clientID, output_file)
+    if len(window[clientID][0]) == Wrx:
+        dump_window_to_file(clientID, output_file)
 
     # Testa se o hash enviado e o testado com o cabeçalho+msg são iguais
     if (msg_hash[0] == test_hash):
@@ -160,7 +161,7 @@ def check_package(s, data, addr, Wrx, Perror, output_file):
         # Descartar mensagem
         if print_stuff is 1: print("Hashes are not the same, message DISCARDED!\n")
 
-    move_window(clientID, output_file, Wrx)
+    # move_window(clientID, output_file, Wrx)
 
 
 
